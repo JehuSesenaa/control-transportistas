@@ -1,0 +1,50 @@
+<div class="container">
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h1>Gestión de Unidades</h1>
+      <button class="btn btn-primary" (click)="crearUnidad()">Nueva Unidad</button>
+    </div>
+
+    <div *ngIf="mensaje" class="alert" [ngClass]="{'alert-success': tipoMensaje === 'success', 'alert-danger': tipoMensaje === 'danger'}">
+      {{ mensaje }}
+    </div>
+
+    <div *ngIf="unidades.length === 0" class="empty-state">
+      <p>No hay unidades registradas</p>
+      <button class="btn btn-primary" (click)="crearUnidad()">Crear primera unidad</button>
+    </div>
+
+    <table *ngIf="unidades.length > 0" class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Placa</th>
+          <th>Marca</th>
+          <th>Modelo</th>
+          <th>Año</th>
+          <th>Usuario Asignado</th>
+          <th>Fecha de Creación</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let unidad of unidades">
+          <td>{{ unidad.id }}</td>
+          <td>{{ unidad.placa }}</td>
+          <td>{{ unidad.marca }}</td>
+          <td>{{ unidad.modelo }}</td>
+          <td>{{ unidad.anio }}</td>
+          <td>
+            <span *ngIf="unidad.usuario">{{ unidad.usuario.nombre }}</span>
+            <span *ngIf="!unidad.usuario" style="color: #999;">Sin asignar</span>
+          </td>
+          <td>{{ unidad.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+          <td>
+            <button class="btn btn-secondary" (click)="editarUnidad(unidad.id)" style="margin-right: 5px;">Editar</button>
+            <button class="btn btn-danger" (click)="eliminarUnidad(unidad.id)">Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

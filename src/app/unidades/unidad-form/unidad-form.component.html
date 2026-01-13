@@ -1,0 +1,106 @@
+<div class="container">
+  <div class="card">
+    <h1>{{ esEdicion ? 'Editar Unidad' : 'Nueva Unidad' }}</h1>
+
+    <div *ngIf="mensaje" class="alert" [ngClass]="{'alert-success': tipoMensaje === 'success', 'alert-danger': tipoMensaje === 'danger'}">
+      {{ mensaje }}
+    </div>
+
+    <div *ngIf="usuarios.length === 0" class="alert alert-danger">
+      No hay usuarios disponibles. Por favor, <a routerLink="/usuarios/nuevo">cree un usuario</a> primero.
+    </div>
+
+    <form [formGroup]="unidadForm" (ngSubmit)="guardar()" *ngIf="usuarios.length > 0">
+      <div class="form-group">
+        <label for="placa">Placa *</label>
+        <input
+          type="text"
+          id="placa"
+          class="form-control"
+          formControlName="placa"
+          placeholder="ABC-123"
+          [class.is-invalid]="placa?.invalid && placa?.touched"
+        />
+        <div *ngIf="placa?.invalid && placa?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          <div *ngIf="placa?.errors?.['required']">La placa es requerida</div>
+          <div *ngIf="placa?.errors?.['pattern']">La placa debe tener el formato ABC-123</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="marca">Marca *</label>
+        <input
+          type="text"
+          id="marca"
+          class="form-control"
+          formControlName="marca"
+          [class.is-invalid]="marca?.invalid && marca?.touched"
+        />
+        <div *ngIf="marca?.invalid && marca?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          <div *ngIf="marca?.errors?.['required']">La marca es requerida</div>
+          <div *ngIf="marca?.errors?.['minlength']">La marca debe tener al menos 2 caracteres</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="modelo">Modelo *</label>
+        <input
+          type="text"
+          id="modelo"
+          class="form-control"
+          formControlName="modelo"
+          [class.is-invalid]="modelo?.invalid && modelo?.touched"
+        />
+        <div *ngIf="modelo?.invalid && modelo?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          <div *ngIf="modelo?.errors?.['required']">El modelo es requerido</div>
+          <div *ngIf="modelo?.errors?.['minlength']">El modelo debe tener al menos 2 caracteres</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="anio">Año *</label>
+        <input
+          type="number"
+          id="anio"
+          class="form-control"
+          formControlName="anio"
+          [min]="1900"
+          [max]="anioMaximo"
+          [class.is-invalid]="anio?.invalid && anio?.touched"
+        />
+        <div *ngIf="anio?.invalid && anio?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          <div *ngIf="anio?.errors?.['required']">El año es requerido</div>
+          <div *ngIf="anio?.errors?.['min'] || anio?.errors?.['max']">El año debe estar entre 1900 y {{ anioMaximo }}</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="usuarioId">Usuario Asignado *</label>
+        <select
+          id="usuarioId"
+          class="form-control"
+          formControlName="usuarioId"
+          [class.is-invalid]="usuarioId?.invalid && usuarioId?.touched"
+        >
+          <option value="">Seleccione un usuario</option>
+          <option *ngFor="let usuario of usuarios" [value]="usuario.id">
+            {{ usuario.nombre }} ({{ usuario.email }})
+          </option>
+        </select>
+        <div *ngIf="usuarioId?.invalid && usuarioId?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          <div *ngIf="usuarioId?.errors?.['required']">Debe seleccionar un usuario</div>
+        </div>
+        <div *ngIf="usuarios.length === 0" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          No hay usuarios disponibles. <a routerLink="/usuarios/nuevo">Crear usuario</a>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button type="submit" class="btn btn-success" [disabled]="unidadForm.invalid">
+          {{ esEdicion ? 'Actualizar' : 'Crear' }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>

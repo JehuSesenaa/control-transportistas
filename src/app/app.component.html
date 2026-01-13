@@ -1,0 +1,15 @@
+<nav style="background-color: #343a40; color: white; padding: 15px 0; margin-bottom: 20px;">
+  <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+    <h2 style="margin: 0;">{{ title }}</h2>
+    <div style="display: flex; gap: 20px;">
+      <a routerLink="/usuarios" routerLinkActive="active" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 4px; transition: background-color 0.3s;">
+        Usuarios
+      </a>
+      <a routerLink="/unidades" routerLinkActive="active" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 4px; transition: background-color 0.3s;">
+        Unidades
+      </a>
+    </div>
+  </div>
+</nav>
+
+<router-outlet></router-outlet>

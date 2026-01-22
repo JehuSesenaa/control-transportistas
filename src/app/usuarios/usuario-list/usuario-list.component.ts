@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Usuario } from '../../models/usuario.model';
 import { UsuarioService } from '../../services/usuario.service';
 
@@ -11,25 +12,27 @@ import { UsuarioService } from '../../services/usuario.service';
 })
 export class UsuarioListComponent implements OnInit, OnDestroy {
   usuarios: Usuario[] = [];
-  private subscription?: Subscription;
+  private destroy$ = new Subject<void>();
   mensaje: string = '';
   tipoMensaje: 'success' | 'danger' = 'success';
 
   constructor(
     private usuarioService: UsuarioService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    this.subscription = this.usuarioService.getUsuarios().subscribe(
-      usuarios => {
+    this.usuarioService.usuarios$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(usuarios => {
         this.usuarios = usuarios;
-      }
-    );
+        console.log('Usuarios cargados en el componente:', usuarios);
+      });
   }
 
   ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   crearUsuario(): void {
@@ -42,15 +45,17 @@ export class UsuarioListComponent implements OnInit, OnDestroy {
 
   eliminarUsuario(id: number): void {
     if (confirm('¿Está seguro de que desea eliminar este usuario?')) {
-      const usuario = this.usuarioService.getUsuarioById(id);
-      if (usuario) {
-        const eliminado = this.usuarioService.eliminarUsuario(id);
-        if (eliminado) {
-          this.mostrarMensaje(`Usuario "${usuario.nombre}" eliminado correctamente`, 'success');
-        } else {
-          this.mostrarMensaje('Error al eliminar el usuario', 'danger');
-        }
-      }
+      this.usuarioService.eliminarUsuario(id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.mostrarMensaje('Usuario eliminado correctamente', 'success');
+          },
+          error: (error) => {
+            console.error('Error al eliminar usuario:', error);
+            this.mostrarMensaje('Error al eliminar el usuario', 'danger');
+          }
+        });
     }
   }
 

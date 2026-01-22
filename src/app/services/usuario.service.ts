@@ -50,12 +50,13 @@ getUsuarios(): Observable<Usuario[]> {
     );
   }
 
-crearUsuario(usuario: Omit<Usuario, 'id' | 'fechaCreacion'> & { password: string }): Observable<Usuario> {
-  const usuarioApi = {
-    username: usuario.nombre,
-    full_name: usuario.nombre,
-    email: usuario.email
-  };
+  crearUsuario(usuario: Omit<Usuario, 'id' | 'fechaCreacion'> & { password: string }): Observable<Usuario> {
+    const usuarioApi = {
+      username: usuario.nombre,
+      full_name: usuario.nombre,
+      email: usuario.email,
+      password: usuario.password
+    };
 
     return this.http.post<UsuarioApiResponse>(this.apiUrl, usuarioApi).pipe(
       map(apiUser => this.mapApiToUsuario(apiUser)),

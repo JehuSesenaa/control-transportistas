@@ -55,6 +55,7 @@ getUsuarios(): Observable<Usuario[]> {
       username: usuario.nombre,
       full_name: usuario.nombre,
       email: usuario.email,
+      phone: usuario.telefono,
       password: usuario.password
     };
 
@@ -116,7 +117,7 @@ getUsuarios(): Observable<Usuario[]> {
       id: apiUser.id,
       nombre: apiUser.full_name || apiUser.username,
       email: apiUser.email,
-      telefono: apiUser.phone,
+      telefono: apiUser.phone || '',
       fechaCreacion: new Date(apiUser.created_at)
     };
   }

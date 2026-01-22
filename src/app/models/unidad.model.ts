@@ -2,11 +2,14 @@ import { Usuario } from './usuario.model';
 
 export interface Unidad {
   id: number;
-  placa: string;
-  marca: string;
-  modelo: string;
-  anio: number;
-  usuarioId: number;
+  license_plate: string;
+  brand: string;
+  model: string;
+  year: number;
+  capacity: number;
+  user_id: number;
+  is_active: boolean;
   usuario?: Usuario;
-  fechaCreacion: Date;
+  created_at: Date;
+  updated_at: Date;
 }

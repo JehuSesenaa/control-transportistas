@@ -1,0 +1,109 @@
+<div class="container">
+  <div class="card">
+    <h1>{{ esEdicion ? 'Editar Registro de Rendimiento' : 'Nuevo Registro de Rendimiento' }}</h1>
+
+    <div *ngIf="mensaje" class="alert" [ngClass]="{'alert-success': tipoMensaje === 'success', 'alert-danger': tipoMensaje === 'danger'}">
+      {{ mensaje }}
+    </div>
+
+    <div *ngIf="rutas.length === 0" class="alert alert-warning">
+      No hay rutas completadas disponibles. Para registrar rendimiento, primero debe completar alguna ruta.
+    </div>
+
+    <form [formGroup]="performanceForm" (ngSubmit)="guardar()" *ngIf="rutas.length > 0">
+      <div class="form-group">
+        <label for="route_id">Ruta Completada{{ !esEdicion ? ' *' : '' }}</label>
+        <select
+          id="route_id"
+          class="form-control"
+          formControlName="route_id"
+          [class.is-invalid]="route_id?.invalid && route_id?.touched"
+          [attr.disabled]="esEdicion ? true : null"
+        >
+          <option value="">Seleccione una ruta completada</option>
+          <option *ngFor="let ruta of rutas" [value]="ruta.id">
+            {{ ruta.origin }} → {{ ruta.destination }} ({{ ruta.distance_km }} km)
+          </option>
+        </select>
+        <div *ngIf="route_id?.invalid && route_id?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          <div *ngIf="route_id?.errors?.['required'] && !esEdicion">Debe seleccionar una ruta</div>
+        </div>
+        <div *ngIf="rutas.length === 0" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          No hay rutas completadas disponibles
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="distance_traveled_km">Distancia Recorrida Real (km){{ !esEdicion ? ' *' : '' }}</label>
+        <input
+          type="number"
+          id="distance_traveled_km"
+          class="form-control"
+          formControlName="distance_traveled_km"
+          placeholder="0.0"
+          step="0.1"
+          min="0.1"
+          [class.is-invalid]="distance_traveled_km?.invalid && distance_traveled_km?.touched"
+        />
+        <div *ngIf="distance_traveled_km?.invalid && distance_traveled_km?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          <div *ngIf="distance_traveled_km?.errors?.['required'] && !esEdicion">La distancia recorrida es requerida</div>
+          <div *ngIf="distance_traveled_km?.errors?.['min']">La distancia debe ser mayor a 0</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="fuel_consumed_liters">Combustible Consumido (litros){{ !esEdicion ? ' *' : '' }}</label>
+        <input
+          type="number"
+          id="fuel_consumed_liters"
+          class="form-control"
+          formControlName="fuel_consumed_liters"
+          placeholder="0.0"
+          step="0.1"
+          min="0.1"
+          [class.is-invalid]="fuel_consumed_liters?.invalid && fuel_consumed_liters?.touched"
+        />
+        <div *ngIf="fuel_consumed_liters?.invalid && fuel_consumed_liters?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          <div *ngIf="fuel_consumed_liters?.errors?.['required'] && !esEdicion">El consumo de combustible es requerido</div>
+          <div *ngIf="fuel_consumed_liters?.errors?.['min']">El consumo debe ser mayor a 0</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="actual_time_hours">Tiempo Real del Viaje (horas){{ !esEdicion ? ' *' : '' }}</label>
+        <input
+          type="number"
+          id="actual_time_hours"
+          class="form-control"
+          formControlName="actual_time_hours"
+          placeholder="0.0"
+          step="0.1"
+          min="0.1"
+          [class.is-invalid]="actual_time_hours?.invalid && actual_time_hours?.touched"
+        />
+        <div *ngIf="actual_time_hours?.invalid && actual_time_hours?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          <div *ngIf="actual_time_hours?.errors?.['required'] && !esEdicion">El tiempo real es requerido</div>
+          <div *ngIf="actual_time_hours?.errors?.['min']">El tiempo debe ser mayor a 0</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="notes">Notas</label>
+        <textarea
+          id="notes"
+          class="form-control"
+          formControlName="notes"
+          rows="3"
+          placeholder="Observaciones adicionales sobre el rendimiento..."
+        ></textarea>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button type="submit" class="btn btn-success" [disabled]="performanceForm.invalid">
+          {{ esEdicion ? 'Actualizar' : 'Crear' }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>

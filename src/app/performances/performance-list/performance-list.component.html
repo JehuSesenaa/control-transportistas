@@ -1,0 +1,66 @@
+<div class="container">
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h1>Gestión de Rendimiento de Rutas</h1>
+      <button class="btn btn-primary" (click)="crearPerformance()">Nuevo Registro</button>
+    </div>
+
+    <div *ngIf="mensaje" class="alert" [ngClass]="{'alert-success': tipoMensaje === 'success', 'alert-danger': tipoMensaje === 'danger'}">
+      {{ mensaje }}
+    </div>
+
+    <div *ngIf="performances.length === 0" class="empty-state">
+      <p>No hay registros de rendimiento</p>
+      <button class="btn btn-primary" (click)="crearPerformance()">Crear primer registro</button>
+    </div>
+
+    <table *ngIf="performances.length > 0" class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Ruta</th>
+          <th>Distancia Real (km)</th>
+          <th>Combustible (L)</th>
+          <th>Tiempo Real (h)</th>
+          <th>Velocidad Promedio (km/h)</th>
+          <th>Eficiencia</th>
+          <th>Eficiencia Combustible</th>
+          <th>Fecha Registro</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let performance of performances">
+          <td>{{ performance.id }}</td>
+          <td>
+            <span *ngIf="performance.ruta">
+              {{ performance.ruta.origin }} → {{ performance.ruta.destination }}
+            </span>
+            <span *ngIf="!performance.ruta" style="color: #999;">
+              Ruta #{{ performance.route_id }}
+            </span>
+          </td>
+          <td>{{ performance.distance_traveled_km }}</td>
+          <td>{{ performance.fuel_consumed_liters }}</td>
+          <td>{{ performance.actual_time_hours }}</td>
+          <td>{{ performance.average_speed_kmh }}</td>
+          <td>
+            <span [ngClass]="{
+              'badge badge-success': performance.efficiency_score >= 80,
+              'badge badge-warning': performance.efficiency_score >= 60 && performance.efficiency_score < 80,
+              'badge badge-danger': performance.efficiency_score < 60
+            }">
+              {{ performance.efficiency_score }}%
+            </span>
+          </td>
+          <td>{{ performance.fuel_efficiency_km_per_liter }} km/L</td>
+          <td>{{ performance.recorded_at | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <button class="btn btn-secondary btn-sm" (click)="editarPerformance(performance.id)" style="margin-right: 5px;">Editar</button>
+            <button class="btn btn-danger btn-sm" (click)="eliminarPerformance(performance.id)">Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

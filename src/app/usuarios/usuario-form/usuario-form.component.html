@@ -7,51 +7,67 @@
     </div>
 
     <form [formGroup]="usuarioForm" (ngSubmit)="guardar()">
-      <div class="form-group">
-        <label for="nombre">Nombre *</label>
-        <input
-          type="text"
-          id="nombre"
-          class="form-control"
-          formControlName="nombre"
-          [class.is-invalid]="nombre?.invalid && nombre?.touched"
-        />
-        <div *ngIf="nombre?.invalid && nombre?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
-          <div *ngIf="nombre?.errors?.['required']">El nombre es requerido</div>
-          <div *ngIf="nombre?.errors?.['minlength']">El nombre debe tener al menos 3 caracteres</div>
-        </div>
-      </div>
+       <div class="form-group">
+         <label for="nombre">Nombre{{ !esEdicion ? ' *' : '' }}</label>
+         <input
+           type="text"
+           id="nombre"
+           class="form-control"
+           formControlName="nombre"
+           [class.is-invalid]="nombre?.invalid && nombre?.touched"
+         />
+         <div *ngIf="nombre?.invalid && nombre?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+           <div *ngIf="nombre?.errors?.['required'] && !esEdicion">El nombre es requerido</div>
+           <div *ngIf="nombre?.errors?.['minlength']">El nombre debe tener al menos 3 caracteres</div>
+         </div>
+       </div>
 
-      <div class="form-group">
-        <label for="email">Email *</label>
-        <input
-          type="email"
-          id="email"
-          class="form-control"
-          formControlName="email"
-          [class.is-invalid]="email?.invalid && email?.touched"
-        />
-        <div *ngIf="email?.invalid && email?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
-          <div *ngIf="email?.errors?.['required']">El email es requerido</div>
-          <div *ngIf="email?.errors?.['email']">El email no es válido</div>
-        </div>
-      </div>
+       <div class="form-group">
+         <label for="email">Email{{ !esEdicion ? ' *' : '' }}</label>
+         <input
+           type="email"
+           id="email"
+           class="form-control"
+           formControlName="email"
+           [class.is-invalid]="email?.invalid && email?.touched"
+         />
+         <div *ngIf="email?.invalid && email?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+           <div *ngIf="email?.errors?.['required'] && !esEdicion">El email es requerido</div>
+           <div *ngIf="email?.errors?.['email']">El email no es válido</div>
+         </div>
+       </div>
 
-      <div class="form-group">
-        <label for="telefono">Teléfono *</label>
-        <input
-          type="text"
-          id="telefono"
-          class="form-control"
-          formControlName="telefono"
-          placeholder="10 dígitos"
-          [class.is-invalid]="telefono?.invalid && telefono?.touched"
-        />
-        <div *ngIf="telefono?.invalid && telefono?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
-          <div *ngIf="telefono?.errors?.['required']">El teléfono es requerido</div>
-          <div *ngIf="telefono?.errors?.['pattern']">El teléfono debe tener 10 dígitos</div>
-        </div>
-      </div>
+       <div class="form-group">
+         <label for="telefono">Teléfono{{ !esEdicion ? ' *' : '' }}</label>
+         <input
+           type="text"
+           id="telefono"
+           class="form-control"
+           formControlName="telefono"
+           placeholder="10 dígitos"
+           [class.is-invalid]="telefono?.invalid && telefono?.touched"
+         />
+         <div *ngIf="telefono?.invalid && telefono?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+           <div *ngIf="telefono?.errors?.['required'] && !esEdicion">El teléfono es requerido</div>
+           <div *ngIf="telefono?.errors?.['pattern']">El teléfono debe tener 10 dígitos</div>
+         </div>
+       </div>
+
+       <div class="form-group" *ngIf="!esEdicion">
+         <label for="password">Contraseña *</label>
+         <input
+           type="password"
+           id="password"
+           class="form-control"
+           formControlName="password"
+           placeholder="Mínimo 6 caracteres"
+           [class.is-invalid]="password?.invalid && password?.touched"
+         />
+         <div *ngIf="password?.invalid && password?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+           <div *ngIf="password?.errors?.['required']">La contraseña es requerida</div>
+           <div *ngIf="password?.errors?.['minlength']">La contraseña debe tener al menos 6 caracteres</div>
+         </div>
+       </div>
 
       <div style="display: flex; gap: 10px; margin-top: 20px;">
         <button type="submit" class="btn btn-success" [disabled]="usuarioForm.invalid">

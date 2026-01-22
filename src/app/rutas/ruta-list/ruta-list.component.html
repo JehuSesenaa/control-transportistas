@@ -1,0 +1,133 @@
+<div class="container">
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h1>Gestión de Rutas</h1>
+      <button class="btn btn-primary" (click)="crearRuta()">Nueva Ruta</button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros" style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+      <h5>Filtros</h5>
+      <div style="display: flex; gap: 15px; align-items: end;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="filtroStatus">Estado:</label>
+          <select
+            id="filtroStatus"
+            class="form-control"
+            [(ngModel)]="filtroStatus"
+            style="width: 150px;"
+          >
+            <option value="">Todos</option>
+            <option *ngFor="let estado of getEstadosDisponibles()" [value]="estado">{{ estado }}</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="filtroUnitId">ID Unidad:</label>
+          <input
+            type="number"
+            id="filtroUnitId"
+            class="form-control"
+            [(ngModel)]="filtroUnitId"
+            placeholder="Ej: 1"
+            style="width: 100px;"
+          />
+        </div>
+
+        <button class="btn btn-primary" (click)="aplicarFiltros()">Aplicar Filtros</button>
+        <button class="btn btn-outline-secondary" (click)="limpiarFiltros()">Limpiar</button>
+      </div>
+    </div>
+
+    <div *ngIf="mensaje" class="alert" [ngClass]="{'alert-success': tipoMensaje === 'success', 'alert-danger': tipoMensaje === 'danger'}">
+      {{ mensaje }}
+    </div>
+
+    <div *ngIf="rutas.length === 0" class="empty-state">
+      <p>No hay rutas registradas</p>
+      <p *ngIf="filtroStatus || filtroUnitId" class="text-muted">
+        No se encontraron rutas con los filtros aplicados
+      </p>
+      <button class="btn btn-primary" (click)="crearRuta()">Crear primera ruta</button>
+    </div>
+
+    <table *ngIf="rutas.length > 0" class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Origen</th>
+          <th>Destino</th>
+          <th>Distancia (km)</th>
+          <th>Tiempo Est. (h)</th>
+          <th>Unidad</th>
+          <th>Estado</th>
+          <th>Asignada</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ruta of rutas">
+          <td>{{ ruta.id }}</td>
+          <td>{{ ruta.origin }}</td>
+          <td>{{ ruta.destination }}</td>
+          <td>{{ ruta.distance_km }}</td>
+          <td>{{ ruta.estimated_time_hours }}</td>
+          <td>
+            <span *ngIf="ruta.unidad">{{ ruta.unidad.license_plate }}</span>
+            <span *ngIf="!ruta.unidad" style="color: #999;">Sin asignar</span>
+          </td>
+          <td>
+            <span [ngClass]="{
+              'badge badge-warning': ruta.status === 'ASIGNADA',
+              'badge badge-info': ruta.status === 'EN_RUTA',
+              'badge badge-success': ruta.status === 'COMPLETADA',
+              'badge badge-danger': ruta.status === 'CANCELADA'
+            }">
+              {{ ruta.status }}
+            </span>
+          </td>
+          <td>{{ ruta.assigned_at | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <div class="btn-group-vertical btn-group-sm" style="width: 100%;">
+              <div class="btn-group" style="margin-bottom: 2px;">
+                <button class="btn btn-secondary btn-sm" (click)="editarRuta(ruta.id)">Editar</button>
+                <button class="btn btn-danger btn-sm" (click)="eliminarRuta(ruta.id)">Eliminar</button>
+              </div>
+
+              <!-- Cambiar estado -->
+              <div class="dropdown-container" style="position: relative;">
+                <button
+                  class="btn btn-outline-primary btn-sm"
+                  (click)="toggleDropdown(ruta.id)"
+                  [class.active]="dropdownOpen[ruta.id]"
+                >
+                  Estado ▼
+                </button>
+                <div
+                  class="dropdown-menu-custom"
+                  [class.show]="dropdownOpen[ruta.id]"
+                  style="position: absolute; top: 100%; left: 0; z-index: 1000; background: white; border: 1px solid #ddd; border-radius: 4px; min-width: 120px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+                >
+                  <button
+                    *ngFor="let estado of getEstadosDisponibles()"
+                    class="dropdown-item-custom"
+                    [class.disabled]="ruta.status === estado"
+                    (click)="cambiarEstado(ruta.id, estado)"
+                    style="display: block; width: 100%; padding: 8px 12px; border: none; background: none; text-align: left; cursor: pointer; border-bottom: 1px solid #f0f0f0;"
+                    [style.cursor]="ruta.status === estado ? 'not-allowed' : 'pointer'"
+                    [style.opacity]="ruta.status === estado ? '0.5' : '1'"
+                  >
+                    <span [style.color]="ruta.status === estado ? 'green' : 'black'">
+                      {{ ruta.status === estado ? '[X]' : '[ ]' }}
+                    </span>
+                    {{ estado }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

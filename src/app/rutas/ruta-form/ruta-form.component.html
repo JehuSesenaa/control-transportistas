@@ -1,0 +1,115 @@
+<div class="container">
+  <div class="card">
+    <h1>{{ esEdicion ? 'Editar Ruta' : 'Nueva Ruta' }}</h1>
+
+    <div *ngIf="mensaje" class="alert" [ngClass]="{'alert-success': tipoMensaje === 'success', 'alert-danger': tipoMensaje === 'danger'}">
+      {{ mensaje }}
+    </div>
+
+    <div *ngIf="esEdicion && rutaForm.disabled" class="alert alert-info">
+      <strong>Información:</strong> Esta ruta está completada y no puede ser editada.
+    </div>
+
+    <div *ngIf="unidades.length === 0" class="alert alert-danger">
+      No hay unidades disponibles. Por favor, <a routerLink="/unidades/nuevo">cree una unidad</a> primero.
+    </div>
+
+    <form [formGroup]="rutaForm" (ngSubmit)="guardar()" *ngIf="unidades.length > 0">
+      <div class="form-group">
+        <label for="origin">Origen{{ !esEdicion ? ' *' : '' }}</label>
+        <input
+          type="text"
+          id="origin"
+          class="form-control"
+          formControlName="origin"
+          placeholder="Ciudad de origen"
+          [class.is-invalid]="origin?.invalid && origin?.touched"
+        />
+        <div *ngIf="origin?.invalid && origin?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          <div *ngIf="origin?.errors?.['required'] && !esEdicion">El origen es requerido</div>
+          <div *ngIf="origin?.errors?.['minlength']">El origen debe tener al menos 2 caracteres</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="destination">Destino{{ !esEdicion ? ' *' : '' }}</label>
+        <input
+          type="text"
+          id="destination"
+          class="form-control"
+          formControlName="destination"
+          placeholder="Ciudad de destino"
+          [class.is-invalid]="destination?.invalid && destination?.touched"
+        />
+        <div *ngIf="destination?.invalid && destination?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          <div *ngIf="destination?.errors?.['required'] && !esEdicion">El destino es requerido</div>
+          <div *ngIf="destination?.errors?.['minlength']">El destino debe tener al menos 2 caracteres</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="distance_km">Distancia (km){{ !esEdicion ? ' *' : '' }}</label>
+        <input
+          type="number"
+          id="distance_km"
+          class="form-control"
+          formControlName="distance_km"
+          placeholder="0.0"
+          step="0.1"
+          min="0.1"
+          [class.is-invalid]="distance_km?.invalid && distance_km?.touched"
+        />
+        <div *ngIf="distance_km?.invalid && distance_km?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          <div *ngIf="distance_km?.errors?.['required'] && !esEdicion">La distancia es requerida</div>
+          <div *ngIf="distance_km?.errors?.['min']">La distancia debe ser mayor a 0</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="estimated_time_hours">Tiempo Estimado (horas){{ !esEdicion ? ' *' : '' }}</label>
+        <input
+          type="number"
+          id="estimated_time_hours"
+          class="form-control"
+          formControlName="estimated_time_hours"
+          placeholder="0.0"
+          step="0.1"
+          min="0.1"
+          [class.is-invalid]="estimated_time_hours?.invalid && estimated_time_hours?.touched"
+        />
+        <div *ngIf="estimated_time_hours?.invalid && estimated_time_hours?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          <div *ngIf="estimated_time_hours?.errors?.['required'] && !esEdicion">El tiempo estimado es requerido</div>
+          <div *ngIf="estimated_time_hours?.errors?.['min']">El tiempo debe ser mayor a 0</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="unit_id">Unidad Asignada{{ !esEdicion ? ' *' : '' }}</label>
+        <select
+          id="unit_id"
+          class="form-control"
+          formControlName="unit_id"
+          [class.is-invalid]="unit_id?.invalid && unit_id?.touched"
+        >
+          <option value="">Seleccione una unidad</option>
+          <option *ngFor="let unidad of unidades" [value]="unidad.id">
+            {{ unidad.license_plate }} - {{ unidad.brand }} {{ unidad.model }}
+          </option>
+        </select>
+        <div *ngIf="unit_id?.invalid && unit_id?.touched" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          <div *ngIf="unit_id?.errors?.['required'] && !esEdicion">Debe seleccionar una unidad</div>
+        </div>
+        <div *ngIf="unidades.length === 0" style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+          No hay unidades disponibles. <a routerLink="/unidades/nuevo">Crear unidad</a>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button type="submit" class="btn btn-success" [disabled]="rutaForm.invalid || rutaForm.disabled">
+          {{ esEdicion ? 'Actualizar' : 'Crear' }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>

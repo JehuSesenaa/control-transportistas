@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { UnidadService } from '../../services/unidad.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { Usuario } from '../../models/usuario.model';
@@ -19,7 +20,7 @@ export class UnidadFormComponent implements OnInit, OnDestroy {
   mensaje: string = '';
   tipoMensaje: 'success' | 'danger' = 'success';
   anioMaximo: number;
-  private subscription?: Subscription;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
@@ -30,79 +31,134 @@ export class UnidadFormComponent implements OnInit, OnDestroy {
   ) {
     this.anioMaximo = new Date().getFullYear() + 1;
     this.unidadForm = this.fb.group({
-      placa: ['', [Validators.required, Validators.pattern(/^[A-Z]{3}-[0-9]{3}$/)]],
-      marca: ['', [Validators.required, Validators.minLength(2)]],
-      modelo: ['', [Validators.required, Validators.minLength(2)]],
-      anio: ['', [Validators.required, Validators.min(1900), Validators.max(this.anioMaximo)]],
-      usuarioId: ['', Validators.required]
+      license_plate: ['', [Validators.required, Validators.pattern(/^[A-Z]{3}-[0-9]{3}$/)]],
+      brand: ['', [Validators.required, Validators.minLength(2)]],
+      model: ['', [Validators.required, Validators.minLength(2)]],
+      year: ['', [Validators.required, Validators.min(1900), Validators.max(this.anioMaximo)]],
+      capacity: ['', [Validators.required, Validators.min(1)]],
+      user_id: ['', Validators.required]
     });
   }
 
   ngOnInit(): void {
-    // Cargar usuarios disponibles
-    this.subscription = this.usuarioService.getUsuarios().subscribe(
-      usuarios => {
+    this.usuarioService.usuarios$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(usuarios => {
         this.usuarios = usuarios;
-      }
-    );
+      });
 
-    // Cargar unidad si es edición
-    this.route.params.subscribe(params => {
+    this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const id = params['id'];
       if (id) {
         this.esEdicion = true;
         this.unidadId = +id;
+        this.configurarFormularioEdicion();
         this.cargarUnidad(this.unidadId);
+      } else {
+        this.esEdicion = false;
+        this.configurarFormularioCreacion();
       }
     });
   }
 
   ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private configurarFormularioCreacion(): void {
+    // El formulario ya está configurado para creación en el constructor
+  }
+
+  private configurarFormularioEdicion(): void {
+    // En edición, algunos campos pueden ser opcionales
+    const controls = this.unidadForm.controls;
+    Object.keys(controls).forEach(key => {
+      if (key !== 'license_plate') { // La placa no se puede cambiar
+        controls[key].clearValidators();
+        controls[key].setValidators([Validators.minLength(key === 'brand' || key === 'model' ? 2 : 0)]);
+        if (key === 'capacity') {
+          controls[key].setValidators([Validators.min(1)]);
+        }
+        controls[key].updateValueAndValidity();
+      }
+    });
   }
 
   cargarUnidad(id: number): void {
-    const unidad = this.unidadService.getUnidadById(id);
-    if (unidad) {
-      this.unidadForm.patchValue({
-        placa: unidad.placa,
-        marca: unidad.marca,
-        modelo: unidad.modelo,
-        anio: unidad.anio,
-        usuarioId: unidad.usuarioId
+    this.unidadService.getUnidadById(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (unidad) => {
+          this.unidadForm.patchValue({
+            license_plate: unidad.license_plate,
+            brand: unidad.brand,
+            model: unidad.model,
+            year: unidad.year,
+            capacity: unidad.capacity,
+            user_id: unidad.user_id
+          });
+        },
+        error: (error) => {
+          console.error('Error al cargar unidad:', error);
+          this.mostrarMensaje('Unidad no encontrada', 'danger');
+          setTimeout(() => {
+            this.router.navigate(['/unidades']);
+          }, 2000);
+        }
       });
-    } else {
-      this.mostrarMensaje('Unidad no encontrada', 'danger');
-      setTimeout(() => {
-        this.router.navigate(['/unidades']);
-      }, 2000);
-    }
   }
 
   guardar(): void {
     if (this.unidadForm.valid) {
       const datosUnidad = this.unidadForm.value;
-      
+
       if (this.esEdicion && this.unidadId) {
-        const actualizado = this.unidadService.actualizarUnidad(this.unidadId, datosUnidad);
-        if (actualizado) {
-          this.mostrarMensaje('Unidad actualizada correctamente', 'success');
-          setTimeout(() => {
-            this.router.navigate(['/unidades']);
-          }, 1500);
+        // Actualizar unidad - solo enviar campos modificados
+        const datosActualizacion: Partial<typeof datosUnidad> = {};
+
+        // Solo incluir campos que tienen valor (no vacíos)
+        Object.keys(datosUnidad).forEach(key => {
+          if (datosUnidad[key] !== '' && datosUnidad[key] !== null && datosUnidad[key] !== undefined) {
+            datosActualizacion[key] = datosUnidad[key];
+          }
+        });
+
+        // Solo actualizar si hay cambios
+        if (Object.keys(datosActualizacion).length > 0) {
+          this.unidadService.actualizarUnidad(this.unidadId, datosActualizacion)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: () => {
+                this.mostrarMensaje('Unidad actualizada correctamente', 'success');
+                setTimeout(() => {
+                  this.router.navigate(['/unidades']);
+                }, 1500);
+              },
+              error: (error) => {
+                console.error('Error al actualizar unidad:', error);
+                this.mostrarMensaje('Error al actualizar la unidad', 'danger');
+              }
+            });
         } else {
-          this.mostrarMensaje('Error al actualizar la unidad', 'danger');
+          this.mostrarMensaje('No hay cambios para guardar', 'danger');
         }
       } else {
-        const creado = this.unidadService.crearUnidad(datosUnidad);
-        if (creado) {
-          this.mostrarMensaje('Unidad creada correctamente', 'success');
-          setTimeout(() => {
-            this.router.navigate(['/unidades']);
-          }, 1500);
-        } else {
-          this.mostrarMensaje('Error al crear la unidad', 'danger');
-        }
+        // Crear unidad
+        this.unidadService.crearUnidad(datosUnidad)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.mostrarMensaje('Unidad creada correctamente', 'success');
+              setTimeout(() => {
+                this.router.navigate(['/unidades']);
+              }, 1500);
+            },
+            error: (error) => {
+              console.error('Error al crear unidad:', error);
+              this.mostrarMensaje('Error al crear la unidad', 'danger');
+            }
+          });
       }
     } else {
       this.marcarCamposInvalidos();
@@ -130,23 +186,27 @@ export class UnidadFormComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  get placa() {
-    return this.unidadForm.get('placa');
+  get license_plate() {
+    return this.unidadForm.get('license_plate');
   }
 
-  get marca() {
-    return this.unidadForm.get('marca');
+  get brand() {
+    return this.unidadForm.get('brand');
   }
 
-  get modelo() {
-    return this.unidadForm.get('modelo');
+  get model() {
+    return this.unidadForm.get('model');
   }
 
-  get anio() {
-    return this.unidadForm.get('anio');
+  get year() {
+    return this.unidadForm.get('year');
   }
 
-  get usuarioId() {
-    return this.unidadForm.get('usuarioId');
+  get capacity() {
+    return this.unidadForm.get('capacity');
+  }
+
+  get user_id() {
+    return this.unidadForm.get('user_id');
   }
 }

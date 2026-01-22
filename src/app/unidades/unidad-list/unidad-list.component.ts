@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Unidad } from '../../models/unidad.model';
 import { UnidadService } from '../../services/unidad.service';
 
@@ -11,7 +12,7 @@ import { UnidadService } from '../../services/unidad.service';
 })
 export class UnidadListComponent implements OnInit, OnDestroy {
   unidades: Unidad[] = [];
-  private subscription?: Subscription;
+  private destroy$ = new Subject<void>();
   mensaje: string = '';
   tipoMensaje: 'success' | 'danger' = 'success';
 
@@ -21,15 +22,16 @@ export class UnidadListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.subscription = this.unidadService.getUnidades().subscribe(
-      unidades => {
+    this.unidadService.unidades$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(unidades => {
         this.unidades = unidades;
-      }
-    );
+      });
   }
 
   ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   crearUnidad(): void {
@@ -42,15 +44,17 @@ export class UnidadListComponent implements OnInit, OnDestroy {
 
   eliminarUnidad(id: number): void {
     if (confirm('¿Está seguro de que desea eliminar esta unidad?')) {
-      const unidad = this.unidadService.getUnidadById(id);
-      if (unidad) {
-        const eliminado = this.unidadService.eliminarUnidad(id);
-        if (eliminado) {
-          this.mostrarMensaje(`Unidad "${unidad.placa}" eliminada correctamente`, 'success');
-        } else {
-          this.mostrarMensaje('Error al eliminar la unidad', 'danger');
-        }
-      }
+      this.unidadService.eliminarUnidad(id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.mostrarMensaje('Unidad eliminada correctamente', 'success');
+          },
+          error: (error) => {
+            console.error('Error al eliminar unidad:', error);
+            this.mostrarMensaje('Error al eliminar la unidad', 'danger');
+          }
+        });
     }
   }
 

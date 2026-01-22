@@ -22,6 +22,7 @@
           <th>Marca</th>
           <th>Modelo</th>
           <th>Año</th>
+          <th>Capacidad</th>
           <th>Usuario Asignado</th>
           <th>Fecha de Creación</th>
           <th>Acciones</th>
@@ -30,15 +31,16 @@
       <tbody>
         <tr *ngFor="let unidad of unidades">
           <td>{{ unidad.id }}</td>
-          <td>{{ unidad.placa }}</td>
-          <td>{{ unidad.marca }}</td>
-          <td>{{ unidad.modelo }}</td>
-          <td>{{ unidad.anio }}</td>
+          <td>{{ unidad.license_plate }}</td>
+          <td>{{ unidad.brand }}</td>
+          <td>{{ unidad.model }}</td>
+          <td>{{ unidad.year }}</td>
+          <td>{{ unidad.capacity }} Kg</td>
           <td>
             <span *ngIf="unidad.usuario">{{ unidad.usuario.nombre }}</span>
             <span *ngIf="!unidad.usuario" style="color: #999;">Sin asignar</span>
           </td>
-          <td>{{ unidad.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+          <td>{{ unidad.created_at | date:'dd/MM/yyyy' }}</td>
           <td>
             <button class="btn btn-secondary" (click)="editarUnidad(unidad.id)" style="margin-right: 5px;">Editar</button>
             <button class="btn btn-danger" (click)="eliminarUnidad(unidad.id)">Eliminar</button>

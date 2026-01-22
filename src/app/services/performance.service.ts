@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError, combineLatest, of } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { skip, take } from 'rxjs/operators';
 import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { Performance, CrearPerformanceRequest, ActualizarPerformanceRequest } from '../models/performance.model';
@@ -36,8 +36,23 @@ export class PerformanceService {
     private rutaService: RutaService
   ) {
     this.loadPerformances();
-    this.rutaService.rutas$.subscribe(() => {
-      this.loadPerformances();
+    this.rutaService.rutas$.pipe(skip(1)).subscribe(() => {
+      this.updateRutaRelations();
+    });
+  }
+
+  private updateRutaRelations(): void {
+    const performancesActuales = this.performancesSubject.value;
+
+    this.rutaService.rutas$.pipe(take(1)).subscribe((rutasActuales: any[]) => {
+      const performancesActualizadas = performancesActuales.map(performance => {
+        if (performance.route_id && rutasActuales.length > 0) {
+          performance.ruta = rutasActuales.find((r: any) => r.id === performance.route_id);
+        }
+        return performance;
+      });
+
+      this.performancesSubject.next(performancesActualizadas);
     });
   }
 
